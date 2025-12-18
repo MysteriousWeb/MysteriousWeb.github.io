@@ -27,7 +27,7 @@
             color: var(--text-color);
             height: 100vh;
             height: 100dvh;
-            /* 修改点1：初始状态禁止滚动 */
+            /* 初始状态禁止滚动 */
             overflow: hidden; 
             scroll-snap-type: y mandatory;
             scroll-behavior: smooth;
@@ -376,7 +376,7 @@
     <section id="page2">
         <div class="lottery-machine">
             <div class="prize-title" id="prizeTitle">三等奖抽奖</div>
-            <div class="prize-item" id="prizeItem">奖品：纪念冰箱贴 (20人)</div>
+            <div class="prize-item" id="prizeItem">奖品：耳饰兑换码 (20人)</div>
             
             <div class="results-grid grid-20" id="resultsGrid">
                 </div>
@@ -404,7 +404,8 @@
     <script>
         // 配置
         const prizes = [
-            { id: 0, title: "三等奖", item: "纪念冰箱贴 (20人)", count: 20, class: "grid-20", hasTarget: false },
+            // 修改点：在第一个奖项配置中增加了 forceNumber: 520
+            { id: 0, title: "三等奖", item: "耳饰兑换码 (20人)", count: 20, class: "grid-20", hasTarget: false, forceNumber: 520 },
             { id: 1, title: "二等奖", item: "MLB 帽子 (10人)", count: 10, class: "grid-10", hasTarget: true },
             { id: 2, title: "一等奖", item: "长款靴子 (5人)", count: 5, class: "grid-5", hasTarget: true },
             { id: 3, title: "特等奖", item: "神秘奖品？？？", count: 1, class: "grid-1", hasTarget: true }
@@ -433,7 +434,7 @@
             setTimeout(() => {
                 document.getElementById('letter').classList.add('show');
                 
-                // 修改点2：在信件展示动画（大约1.5秒后）完成后，才允许滚动
+                // 在信件展示动画（大约1.5秒后）完成后，才允许滚动
                 setTimeout(() => {
                     document.body.style.overflowY = 'scroll'; // 恢复滚动
                     document.getElementById('scrollHint').style.opacity = '1';
@@ -490,7 +491,8 @@
 
                 clearInterval(rollInterval);
                 const currentPrize = prizes[step];
-                const finalNumbers = generateNumbers(currentPrize.count, currentPrize.hasTarget);
+                // 修改点：调用函数时传入 forceNumber 参数
+                const finalNumbers = generateNumbers(currentPrize.count, currentPrize.hasTarget, currentPrize.forceNumber);
                 balls.forEach((ball, index) => {
                     ball.innerText = finalNumbers[index].toString().padStart(3, '0');
                 });
@@ -514,13 +516,23 @@
             }
         }
 
-        function generateNumbers(count, includeTarget) {
+        // 修改点：增加了 forceNumber 参数来处理特定数字（如520）
+        function generateNumbers(count, includeTarget, forceNumber) {
             let results = [];
+            
+            // 如果需要包含999 (hasTarget=true)
             if (includeTarget) results.push(999);
+            
+            // 如果需要包含特定数字 (如520)
+            if (forceNumber) results.push(forceNumber);
+
             while (results.length < count) {
                 let r = Math.floor(Math.random() * 1001);
+                // 确保随机数不是999（除非特意包含），并且不重复
                 if (r !== 999 && !results.includes(r)) results.push(r);
             }
+            
+            // 打乱顺序
             if (count > 1) {
                  for (let i = results.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
