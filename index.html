@@ -376,7 +376,7 @@
     <section id="page2">
         <div class="lottery-machine">
             <div class="prize-title" id="prizeTitle">三等奖抽奖</div>
-            <div class="prize-item" id="prizeItem">奖品：耳饰兑换码 (20人)</div>
+            <div class="prize-item" id="prizeItem">奖品：耳饰任选卡 (40人)</div>
             
             <div class="results-grid grid-20" id="resultsGrid">
                 </div>
@@ -404,11 +404,38 @@
     <script>
         // 配置
         const prizes = [
-            // 修改点：在第一个奖项配置中增加了 forceNumber: 520
-            { id: 0, title: "三等奖", item: "耳饰兑换码 (20人)", count: 20, class: "grid-20", hasTarget: false, forceNumber: 520 },
-            { id: 1, title: "二等奖", item: "MLB 帽子 (10人)", count: 10, class: "grid-10", hasTarget: true },
-            { id: 2, title: "一等奖", item: "长款靴子 (5人)", count: 5, class: "grid-5", hasTarget: true },
-            { id: 3, title: "特等奖", item: "神秘奖品？？？", count: 1, class: "grid-1", hasTarget: true }
+            // 第一轮三等奖：20人，排除520，排除999
+            { 
+                id: 0, 
+                title: "三等奖 (第一轮)", 
+                item: "耳饰任选卡 (40人)", 
+                count: 20, 
+                class: "grid-20", 
+                hasTarget: false, 
+                exclude: [520] 
+            },
+            // 第二轮三等奖：20人，必含520，排除999
+            { 
+                id: 1, 
+                title: "三等奖 (第二轮)", 
+                item: "耳饰任选卡 (40人)", 
+                count: 20, 
+                class: "grid-20", 
+                hasTarget: false, 
+                forceNumber: 520 
+            },
+            // 二等奖：10人，排除520，排除999 (hasTarget: false)
+            { 
+                id: 2, 
+                title: "二等奖", 
+                item: "MLB 帽子 & 长款靴子 (10人)", 
+                count: 10, 
+                class: "grid-10", 
+                hasTarget: false,  // 修改点：设为false以排除999
+                exclude: [520]     // 修改点：新增exclude以排除520
+            },
+            { id: 3, title: "一等奖", item: "任选大奖 (5人)", count: 5, class: "grid-5", hasTarget: true },
+            { id: 4, title: "特等奖", item: "神秘奖品？？？", count: 1, class: "grid-1", hasTarget: true }
         ];
 
         let step = 0;
@@ -471,7 +498,8 @@
                 isRolling = false;
                 btn.disabled = true;
 
-                if (step === 3) {
+                // 特等奖逻辑判断，因为三等奖拆分，特等奖是index 4
+                if (step === 4) {
                     clearInterval(rollInterval);
                     let slowDownDelays = [100, 200, 350, 600, 1000]; 
                     let delayIndex = 0;
@@ -491,8 +519,7 @@
 
                 clearInterval(rollInterval);
                 const currentPrize = prizes[step];
-                // 修改点：调用函数时传入 forceNumber 参数
-                const finalNumbers = generateNumbers(currentPrize.count, currentPrize.hasTarget, currentPrize.forceNumber);
+                const finalNumbers = generateNumbers(currentPrize.count, currentPrize.hasTarget, currentPrize.forceNumber, currentPrize.exclude);
                 balls.forEach((ball, index) => {
                     ball.innerText = finalNumbers[index].toString().padStart(3, '0');
                 });
@@ -516,23 +543,22 @@
             }
         }
 
-        // 修改点：增加了 forceNumber 参数来处理特定数字（如520）
-        function generateNumbers(count, includeTarget, forceNumber) {
+        // 参数处理排除逻辑
+        function generateNumbers(count, includeTarget, forceNumber, excludeList) {
             let results = [];
+            const excludes = excludeList || [];
             
-            // 如果需要包含999 (hasTarget=true)
             if (includeTarget) results.push(999);
-            
-            // 如果需要包含特定数字 (如520)
             if (forceNumber) results.push(forceNumber);
 
             while (results.length < count) {
                 let r = Math.floor(Math.random() * 1001);
-                // 确保随机数不是999（除非特意包含），并且不重复
-                if (r !== 999 && !results.includes(r)) results.push(r);
+                // 确保随机数不等于999（除非特意包含），不在已生成列表中，且不在排除列表中
+                if (r !== 999 && !results.includes(r) && !excludes.includes(r)) {
+                    results.push(r);
+                }
             }
             
-            // 打乱顺序
             if (count > 1) {
                  for (let i = results.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
