@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年我们的第一次写真</title>
+    <style>
+        /* --- 全局重置与基础设置 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* 浪漫的淡粉色渐变背景 */
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 100%);
+            font-family: "Songti SC", "SimSun", "Times New Roman", serif; /* 使用衬线体更显优雅 */
+            color: #5a4a4a; /* 柔和的深褐灰色 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* --- 标题样式 --- */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #8b6b6b;
+            font-style: italic;
+        }
+
+        .heart {
+            color: #ff6b81;
+            display: inline-block;
+            margin: 0 5px;
+            animation: beat 1.5s infinite alternate;
+        }
+
+        /* --- 布局容器 --- */
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeInUp 1s ease-out 0.3s backwards; /* 整体淡入 */
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        /* --- 图片相框样式 --- */
+        .photo-frame {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer; /* 鼠标变成手形，提示可点击 */
+        }
+
+        /* 鼠标悬停效果 */
+        .photo-frame:hover {
+            transform: translateY(-5px) scale(1.02); /* 轻微上浮和放大 */
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.3);
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+            display: block;
+            transition: filter 0.3s ease;
+        }
+        
+        /* 点击时的瞬时反馈 */
+        .photo-frame:active img {
+             filter: brightness(0.9);
+        }
+
+
+        /* 第一行：横图布局 (49%) */
+        .row-top .photo-frame {
+            width: 49%;
+            aspect-ratio: 4/3;
+        }
+
+        /* 第二行：竖图布局 (32%) */
+        .row-bottom .photo-frame {
+            width: 32%;
+            aspect-ratio: 3/4;
+        }
+
+        /* --- 底部样式 --- */
+        footer {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #a08080;
+            animation: fadeIn 1.5s ease-in 0.8s backwards;
+        }
+
+        /* --- 动画定义 --- */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+        @keyframes beat {
+            to { transform: scale(1.2); }
+        }
+
+        /* --- 移动端适配 --- */
+        @media (max-width: 600px) {
+            .row { flex-direction: column; }
+            .row-top .photo-frame, .row-bottom .photo-frame {
+                width: 100%;
+                aspect-ratio: auto; /* 手机上取消固定比例，按原图显示 */
+            }
+        }
+
+        /* =========================================
+           新增功能：灯箱 (Lightbox) 样式
+        ========================================= */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 半透明的深粉灰色背景 */
+            background-color: rgba(70, 50, 50, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* 保证在最上层 */
+            opacity: 0;
+            pointer-events: none; /* 隐藏时不阻挡鼠标事件 */
+            transition: opacity 0.4s ease;
+            backdrop-filter: blur(5px); /* 背景模糊效果 (部分浏览器支持) */
+        }
+
+        /* 激活状态 */
+        .lightbox-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 放大后的图片 */
+        .lightbox-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border: 6px solid #fff0f5;
+            border-radius: 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* 弹性放大效果 */
+        }
+
+        .lightbox-overlay.active img {
+            transform: scale(1);
+        }
+
+        /* 关闭按钮 (X) */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 50px;
+            color: #ffe4e1;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-weight: 100;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .close-btn:hover {
+            color: #ff6b81;
+            transform: rotate(90deg); /* 悬停旋转效果 */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span class="heart">❤</span> 2026年我们的第一次写真 <span class="heart">❤</span></h1>
+        <div class="subtitle">记录每一个心动的瞬间</div>
+    </header>
+
+    <div class="container">
+        <div class="row row-top">
+            <div class="photo-frame">
+                <img src="01.jpg" alt="Photo 01" class="thumbnail">
+            </div>
+            <div class="photo-frame">
+                <img src="05.jpg" alt="Photo 05" class="thumbnail">
+            </div>
+        </div>
+
+        <div class="row row-bottom">
+            <div class="photo-frame">
+                <img src="02.jpg" alt="Photo 02" class="thumbnail">
+            </div>
+            <div class="photo-frame">
+                <img src="03.jpg" alt="Photo 03" class="thumbnail">
+            </div>
+            <div class="photo-frame">
+                <img src="04.jpg" alt="Photo 04" class="thumbnail">
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Forever & Always
+    </footer>
+
+    <div id="lightboxOverlay" class="lightbox-overlay">
+        <span class="close-btn">&times;</span>
+        <img id="lightboxImage" src="" alt="Enlarged Photo">
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 获取相关元素
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            const overlay = document.getElementById('lightboxOverlay');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const closeBtn = document.querySelector('.close-btn');
+
+            // --- 功能函数 ---
+
+            // 打开灯箱
+            const openLightbox = (imgSrc) => {
+                // 设置大图的来源为被点击小图的来源
+                lightboxImage.src = imgSrc;
+                // 显示遮罩层
+                overlay.classList.add('active');
+                // 禁止页面背景滚动
+                document.body.style.overflow = 'hidden';
+            };
+
+            // 关闭灯箱
+            const closeLightbox = () => {
+                // 隐藏遮罩层
+                overlay.classList.remove('active');
+                // 恢复页面背景滚动
+                document.body.style.overflow = '';
+                // 动画结束后清空图片源，避免下次打开闪烁
+                setTimeout(() => {
+                     lightboxImage.src = '';
+                }, 400);
+            };
+
+
+            // --- 事件监听 ---
+
+            // 1. 为所有缩略图添加点击事件
+            thumbnails.forEach(thumb => {
+                thumb.addEventListener('click', (e) => {
+                    // 阻止事件冒泡，防止触发不必要的背景点击
+                    e.stopPropagation(); 
+                    openLightbox(thumb.src);
+                });
+            });
+
+            // 2. 点击关闭按钮 (X)
+            closeBtn.addEventListener('click', closeLightbox);
+
+            // 3. 点击遮罩层背景也可以关闭（点在图片外）
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeLightbox();
+                }
+            });
+
+            // 4. 键盘事件监听 (空格键 和 Esc键)
+            document.addEventListener('keydown', (e) => {
+                // 只有当灯箱处于打开状态时才响应
+                if (overlay.classList.contains('active')) {
+                    // 如果按下的是空格键 (' ') 或 Esc键 ('Escape')
+                    if (e.key === ' ' || e.code === 'Space' || e.key === 'Escape') {
+                        e.preventDefault(); // 防止空格键导致页面向下滚动
+                        closeLightbox();
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
